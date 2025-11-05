@@ -1,2 +1,383 @@
 # dg
 dg
+[index.html.html](https://github.com/user-attachments/files/23360477/index.html.html)
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kadir’in Doğum Günü 🎉</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #16213e, #1a1a2e);
+    color: #fff;
+    text-align: center;
+    overflow: hidden;
+    height: 100vh;
+  }
+  h1 {
+    margin-top: 40px;
+    font-size: 1.8rem;
+  }
+  p {
+    margin: 10px auto;
+    width: 90%;
+    max-width: 400px;
+  }
+  .buttons {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  button {
+    background: #ffb347;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #222;
+    transition: transform 0.2s;
+    width: 80%;
+    max-width: 250px;
+  }
+  button:active {
+    transform: scale(0.96);
+    background: #ffd07a;
+  }
+  #message {
+    margin-top: 40px;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    padding: 10px;
+  }
+  #message.show {
+    opacity: 1;
+  }
+  canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+  #startOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<div id="startOverlay">Başlamak için dokun 🎂</div>
+
+<h1>🎉 Eniştene Sürpriz 🎉</h1>
+<p>Butonlara dokun, renkli bir kutlama başlasın!</p>
+
+<div class="buttons">
+  <button id="btnKutla">🎂 Kadir’e Kutlama Yap</button>
+  <button id="btnKonfeti">✨ Konfeti Yağdır</button>
+  <button id="btnReset">🔄 Sıfırla</button>
+</div>
+
+<div id="message">Hazırsan başlayalım...</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+let audioCtx;
+const msg = document.getElementById("message");
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+const overlay = document.getElementById("startOverlay");
+let confettiActive = false;
+
+// 🎵 Ses başlatıcı (dokunmadan sonra aktif olur)
+function initAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+// 🔔 Ses efekti
+function playChime() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type = "triangle";
+  osc.frequency.value = 600;
+  gain.gain.value = 0.12;
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.25);
+}
+
+// 📱 Titreşim (mobil dokunma hissi)
+function vibrate(ms=100) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+// 🎊 Konfeti
+function startConfetti() {
+  if (confettiActive) return;
+  confettiActive = true;
+  const W = (canvas.width = window.innerWidth);
+  const H = (canvas.height = window.innerHeight);
+  const colors = ["#ff3d3d", "#ffb347", "#2dd4bf", "#60a5fa", "#c084fc"];
+  const parts = Array.from({ length: 80 }).map(() => ({
+    x: Math.random() * W,
+    y: Math.random() * H - H,
+    r: 4 + Math.random() * 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    speed: 2 + Math.random() * 3
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    parts.forEach(p => {
+      p.y += p.speed;
+      if (p.y > H) p.y = -10;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+    if (confettiActive) requestAnimationFrame(draw);
+  }
+  draw();
+  setTimeout(() => (confettiActive = false), 4000);
+}
+
+// 🎂 Butonlar
+document.getElementById("btnKutla").addEventListener("click", () => {
+  vibrate(60);
+  msg.textContent = "🎂 Doğum Günün Kutlu Olsun Kadir! 🎉";
+  msg.classList.add("show");
+  startConfetti();
+  playChime();
+});
+document.getElementById("btnKonfeti").addEventListener("click", () => {
+  vibrate(40);
+  msg.textContent = "✨ Konfeti yağmuru başladı!";
+  msg.classList.add("show");
+  startConfetti();
+});
+document.getElementById("btnReset").addEventListener("click", () => {
+  vibrate(30);
+  msg.textContent = "Hazırsan başlayalım...";
+  msg.classList.remove("show");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+// 🟢 Mobil başlatıcı — tıklamadan önce ses çalışmaz
+overlay.addEventListener("click", () => {
+  initAudio();
+  overlay.style.display = "none";
+  playChime();
+  msg.textContent = "Artık kutlamaya hazırsın 🎊";
+  msg.classList.add("show");
+});
+</script>
+</body>
+</html>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kadir’in Doğum Günü 🎉</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #16213e, #1a1a2e);
+    color: #fff;
+    text-align: center;
+    overflow: hidden;
+    height: 100vh;
+  }
+  h1 {
+    margin-top: 40px;
+    font-size: 1.8rem;
+  }
+  p {
+    margin: 10px auto;
+    width: 90%;
+    max-width: 400px;
+  }
+  .buttons {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  button {
+    background: #ffb347;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #222;
+    transition: transform 0.2s;
+    width: 80%;
+    max-width: 250px;
+  }
+  button:active {
+    transform: scale(0.96);
+    background: #ffd07a;
+  }
+  #message {
+    margin-top: 40px;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    padding: 10px;
+  }
+  #message.show {
+    opacity: 1;
+  }
+  canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+  #startOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<div id="startOverlay">Başlamak için dokun 🎂</div>
+
+<h1>🎉 Eniştene Sürpriz 🎉</h1>
+<p>Butonlara dokun, renkli bir kutlama başlasın!</p>
+
+<div class="buttons">
+  <button id="btnKutla">🎂 Kadir’e Kutlama Yap</button>
+  <button id="btnKonfeti">✨ Konfeti Yağdır</button>
+  <button id="btnReset">🔄 Sıfırla</button>
+</div>
+
+<div id="message">Hazırsan başlayalım...</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+let audioCtx;
+const msg = document.getElementById("message");
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+const overlay = document.getElementById("startOverlay");
+let confettiActive = false;
+
+// 🎵 Ses başlatıcı (dokunmadan sonra aktif olur)
+function initAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+// 🔔 Ses efekti
+function playChime() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type = "triangle";
+  osc.frequency.value = 600;
+  gain.gain.value = 0.12;
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.25);
+}
+
+// 📱 Titreşim (mobil dokunma hissi)
+function vibrate(ms=100) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+// 🎊 Konfeti
+function startConfetti() {
+  if (confettiActive) return;
+  confettiActive = true;
+  const W = (canvas.width = window.innerWidth);
+  const H = (canvas.height = window.innerHeight);
+  const colors = ["#ff3d3d", "#ffb347", "#2dd4bf", "#60a5fa", "#c084fc"];
+  const parts = Array.from({ length: 80 }).map(() => ({
+    x: Math.random() * W,
+    y: Math.random() * H - H,
+    r: 4 + Math.random() * 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    speed: 2 + Math.random() * 3
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    parts.forEach(p => {
+      p.y += p.speed;
+      if (p.y > H) p.y = -10;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+    if (confettiActive) requestAnimationFrame(draw);
+  }
+  draw();
+  setTimeout(() => (confettiActive = false), 4000);
+}
+
+// 🎂 Butonlar
+document.getElementById("btnKutla").addEventListener("click", () => {
+  vibrate(60);
+  msg.textContent = "🎂 Doğum Günün Kutlu Olsun Kadir! 🎉";
+  msg.classList.add("show");
+  startConfetti();
+  playChime();
+});
+document.getElementById("btnKonfeti").addEventListener("click", () => {
+  vibrate(40);
+  msg.textContent = "✨ Konfeti yağmuru başladı!";
+  msg.classList.add("show");
+  startConfetti();
+});
+document.getElementById("btnReset").addEventListener("click", () => {
+  vibrate(30);
+  msg.textContent = "Hazırsan başlayalım...";
+  msg.classList.remove("show");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+// 🟢 Mobil başlatıcı — tıklamadan önce ses çalışmaz
+overlay.addEventListener("click", () => {
+  initAudio();
+  overlay.style.display = "none";
+  playChime();
+  msg.textContent = "Artık kutlamaya hazırsın 🎊";
+  msg.classList.add("show");
+});
+</script>
+</body>
+</html>
